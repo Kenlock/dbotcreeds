@@ -47,13 +47,11 @@ export default defineConfig({
                 RUDDERSTACK_KEY: JSON.stringify(process.env.RUDDERSTACK_KEY),
                 GROWTHBOOK_CLIENT_KEY: JSON.stringify(process.env.GROWTHBOOK_CLIENT_KEY),
                 GROWTHBOOK_DECRYPTION_KEY: JSON.stringify(process.env.GROWTHBOOK_DECRYPTION_KEY),
-                // TradeWithKen — runtime Deriv app/client identifier.
                 DERIV_APP_ID: JSON.stringify(process.env.DERIV_APP_ID),
-                // OAuth 2.0 client_id. Kept separate from the legacy numeric app id.
                 DERIV_OAUTH_APP_ID: JSON.stringify(process.env.DERIV_OAUTH_APP_ID),
-                // OAuth/REST proxy base and direct Deriv WebSocket endpoint.
                 PUBLIC_PROXY_BASE: JSON.stringify(process.env.PUBLIC_PROXY_BASE),
                 PUBLIC_DERIV_WS_URL: JSON.stringify(process.env.PUBLIC_DERIV_WS_URL),
+                PUBLIC_LEGACY_DERIV_WS_URL: JSON.stringify(process.env.PUBLIC_LEGACY_DERIV_WS_URL),
             },
         },
         alias: {
@@ -72,29 +70,18 @@ export default defineConfig({
             {
                 from: 'node_modules/@deriv/deriv-charts/dist/*',
                 to: 'js/smartcharts/[name][ext]',
-                globOptions: {
-                    ignore: ['**/*.LICENSE.txt'],
-                },
+                globOptions: { ignore: ['**/*.LICENSE.txt'] },
             },
             { from: 'node_modules/@deriv/deriv-charts/dist/chart/assets/*', to: 'assets/[name][ext]' },
             { from: 'node_modules/@deriv/deriv-charts/dist/chart/assets/fonts/*', to: 'assets/fonts/[name][ext]' },
             { from: 'node_modules/@deriv/deriv-charts/dist/chart/assets/shaders/*', to: 'assets/shaders/[name][ext]' },
             { from: path.join(__dirname, 'public') },
         ],
-        // Ensure service worker is not cached by the browser
         filename: {
-            js: ({ chunk }) => {
-                // Don't add hash to service worker
-                if (chunk?.name === 'sw') {
-                    return '[name].js';
-                }
-                return '[name].[contenthash:8].js';
-            },
+            js: ({ chunk }) => (chunk?.name === 'sw' ? '[name].js' : '[name].[contenthash:8].js'),
         },
     },
-    html: {
-        template: './index.html',
-    },
+    html: { template: './index.html' },
     server: {
         port: 8443,
         host: '0.0.0.0',
@@ -105,21 +92,13 @@ export default defineConfig({
             'Cache-Control': 'no-cache',
         },
     },
-    dev: {
-        hmr: true,
-    },
+    dev: { hmr: true },
     tools: {
         rspack: {
             plugins: [],
             resolve: {},
             module: {
-                rules: [
-                    {
-                        test: /\.xml$/,
-                        exclude: /node_modules/,
-                        use: 'raw-loader',
-                    },
-                ],
+                rules: [{ test: /\.xml$/, exclude: /node_modules/, use: 'raw-loader' }],
             },
         },
     },
