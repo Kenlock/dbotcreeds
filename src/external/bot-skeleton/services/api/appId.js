@@ -1,12 +1,22 @@
 import DerivAPIBasic from '@deriv/deriv-api/dist/DerivAPIBasic';
 import APIMiddleware from './api-middleware';
-import { DERIV_WS_URL } from '@/utils/proxy-config';
 import { DERIV_DEFAULT_APP_ID } from '../../../../ai/lifecycle/deriv-client';
 
+// The bot-skeleton still sends the legacy Deriv WebSocket vocabulary
+// (website_status, active_symbols, balance, authorize, etc.). It must not
+// connect to the new Options API WebSocket, which only accepts the new
+// Options protocol. Keep this transport isolated from the new Options client.
+const LEGACY_DERIV_WS_URL =
+    typeof process !== 'undefined' && (process as any).env?.PUBLIC_LEGACY_DERIV_WS_URL
+        ? String((process as any).env.PUBLIC_LEGACY_DERIV_WS_URL).trim()
+        : 'wss://ws.derivws.com/websockets/v3';
+
 export const generateDerivApiInstance = () => {
-    const socket_url = `${DERIV_WS_URL}${
-        DERIV_DEFAULT_APP_ID ? `?app_id=${encodeURIComponent(DERIV_DEFAULT_APP_ID)}` : ''
-    }`;
+    const separator = LEGACY_DERIV_WS_URL.includes('?') ? '&' : '?';
+    const socket_url = DERIV_DEFAULT_APP_ID
+        ? `${LEGACY_DERIV_WS_URL}${separator}app_id=${encodeURIComponent(DERIV_DEFAULT_APP_ID)}`
+        : LEGACY_DERIV_WS_URL;
+
     const deriv_socket = new WebSocket(socket_url);
     const deriv_api = new DerivAPIBasic({
         connection: deriv_socket,
